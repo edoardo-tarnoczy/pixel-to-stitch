@@ -19,7 +19,7 @@ export default function Home() {
       const result = await processImageToGrid(src, {
         gridWidth: 30,
         gridHeight: 30,
-        maxColors: 6,
+        maxColors: 12,
         technique: "single-crochet",
       });
 
