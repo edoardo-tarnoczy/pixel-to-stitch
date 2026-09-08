@@ -1,69 +1,94 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { UploadZone } from "@/components/UploadZone";
+import { processImageToGrid } from "@/lib/imageProcessor";
+import { StitchCell } from "@/types";
 
 export default function Home() {
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [grid, setGrid] = useState<StitchCell[][]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleImageSelected = async (src: string) => {
+    setImageSrc(src);
+    setLoading(true);
+
+    try {
+      // Testing with a 30-stitch wide grid
+      const result = await processImageToGrid(src, {
+        gridWidth: 30,
+        gridHeight: 30,
+        maxColors: 6,
+        technique: "single-crochet",
+      });
+
+      setGrid(result.grid);
+    } catch (err) {
+      console.error("Failed to process image:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="min-h-screen bg-slate-50 p-8">
+      <div className="max-w-4xl mx-auto space-y-8">
+        <h1 className="text-3xl font-bold text-slate-800">
+          Crochet Pixel-to-Stitch Test
+        </h1>
+
+        <UploadZone onImageSelected={handleImageSelected} />
+
+        {loading && (
+          <p className="text-indigo-600 font-medium">Processing pixels...</p>
+        )}
+
+        {/* Side-by-side comparison once an image is uploaded */}
+        {imageSrc && grid.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-slate-700">
+              Preview ({grid[0].length} x {grid.length} stitches)
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              {/* Original Image */}
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+                <h3 className="text-sm font-medium text-slate-500 mb-2">
+                  Original Image
+                </h3>
+                <img
+                  src={imageSrc}
+                  alt="Original upload"
+                  className="w-full max-h-80 object-contain rounded-lg"
+                />
+              </div>
+
+              {/* Pixelated Stitch Grid */}
+              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+                <h3 className="text-sm font-medium text-slate-500 mb-2">
+                  Pixelated Stitch Grid
+                </h3>
+                <div
+                  className="grid gap-0.5 border border-slate-300 p-1 bg-slate-100 rounded max-h-80 overflow-auto"
+                  style={{
+                    gridTemplateColumns: `repeat(${grid[0].length}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {grid.flat().map((cell, idx) => (
+                    <div
+                      key={idx}
+                      className="aspect-square w-full"
+                      style={{ backgroundColor: cell.color.hex }}
+                      title={`(${cell.x}, ${cell.y}) - ${cell.color.hex}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
