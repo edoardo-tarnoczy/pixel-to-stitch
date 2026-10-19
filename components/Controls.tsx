@@ -15,7 +15,6 @@ export function Controls({ disabled, options, onChange }: ControlsProps) {
         Pattern Settings
       </h2>
 
-      {/* Grid Width Slider */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm font-medium text-slate-700">
           <label htmlFor="gridWidth" className="flex items-center gap-1.5">
@@ -40,7 +39,6 @@ export function Controls({ disabled, options, onChange }: ControlsProps) {
         />
       </div>
 
-      {/* Max Colors Slider */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm font-medium text-slate-700">
           <label htmlFor="maxColors" className="flex items-center gap-1.5">
@@ -65,7 +63,6 @@ export function Controls({ disabled, options, onChange }: ControlsProps) {
         />
       </div>
 
-      {/* Technique Selector */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-slate-700">
           Crochet Technique

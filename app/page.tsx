@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { UploadZone } from "@/components/UploadZone";
 import { processImageToGrid } from "@/lib/imageProcessor";
-import { ProcessingOptions, StitchCell } from "@/types";
+import { PatternRow, ProcessingOptions, StitchCell } from "@/types";
 import { Controls } from "@/components/Controls";
+import { generateWrittenPattern } from "@/lib/patternGenerator";
+import { PatternText } from "@/components/PatternText";
 
 export default function Home() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -16,6 +18,7 @@ export default function Home() {
     maxColors: 12,
     technique: "single-crochet",
   });
+  const [pattern, setPattern] = useState<PatternRow[]>([]);
 
   useEffect(() => {
     if (!imageSrc) return;
@@ -25,6 +28,8 @@ export default function Home() {
       try {
         const result = await processImageToGrid(imageSrc, options);
         setGrid(result.grid);
+        const writtenPattern = generateWrittenPattern(result.grid);
+        setPattern(writtenPattern);
       } catch (err) {
         console.error("Failed to process image:", err);
       } finally {
@@ -57,7 +62,7 @@ export default function Home() {
                   stitches)
                 </h3>
                 <div
-                  className="grid gap-0.5 border border-slate-300 p-1 bg-slate-100 rounded max-h-96 overflow-auto"
+                  className="grid gap-px border border-slate-300 p-1 bg-slate-100 rounded h-auto overflow-auto"
                   style={{
                     gridTemplateColumns: `repeat(${grid[0].length}, minmax(0, 1fr))`,
                   }}
@@ -73,6 +78,7 @@ export default function Home() {
                 </div>
               </div>
             )}
+            <PatternText pattern={pattern} />
           </div>
 
           <div className="md:col-span-1">
